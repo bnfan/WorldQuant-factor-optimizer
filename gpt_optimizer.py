@@ -22,11 +22,11 @@ class WorldQuantFactorOptimizer:
         # 初始化WorldQuant会话
         self.sess = self.sign_in()
         
+        # 先加载可用的操作符（用于输入校验）
+        self.available_operators = self.load_operators()
+
         # 获取用户输入的原始因子
         self.original_factor = self.get_user_input_factor()
-        
-        # 加载可用的操作符
-        self.available_operators = self.load_operators()
         
         # 提示词模板
         self.prompt_template = """
@@ -146,31 +146,51 @@ class WorldQuantFactorOptimizer:
                 print("提示：确保表达式完整且没有重复部分")
     
     def validate_factor_input(self, factor: str) -> bool:
-        """验证因子输入格式"""
-        # 基本检查
+        """验证因子输入格式
+        - 基于支持的操作符/函数列表进行校验
+        - 放宽长度限制，避免误报
+        """
         if not factor:
             return False
-        
-        # 检查是否包含基本的因子函数
-        basic_functions = ['ts_corr', 'ts_covariance', 'rank', 'ts_stddev', 'ts_decay_linear', 'ts_zscore', 'scale']
-        has_function = any(func in factor for func in basic_functions)
-        
-        if not has_function:
+
+        # 从已加载的操作符文本中提取函数名（例如 abs(x) -> abs）
+        import re
+
+        allowed_functions = set()
+        if hasattr(self, 'available_operators') and isinstance(self.available_operators, str):
+            for line in self.available_operators.splitlines():
+                line = line.strip()
+                if not line or line.startswith('#'):
+                    continue
+                # 匹配以 函数名( 开头的行
+                m = re.match(r"([A-Za-z_][A-Za-z0-9_]*)\s*\(", line)
+                if m:
+                    allowed_functions.add(m.group(1))
+
+        # 常见同义名或历史拼写，宽松允许（仅用于本地校验）
+        if 'ts_std_dev' in allowed_functions:
+            allowed_functions.add('ts_stddev')
+
+        # 从用户表达式中提取调用的函数名 tokens
+        used_function_tokens = set(re.findall(r"([A-Za-z_][A-Za-z0-9_]*)\s*\(", factor))
+
+        # 若至少包含一个受支持的函数，则通过函数存在性校验
+        if not (allowed_functions and (used_function_tokens & allowed_functions)):
             print("   ❌ 未检测到有效的因子函数")
             return False
-        
-        # 检查括号是否匹配
-        open_brackets = factor.count('(')
-        close_brackets = factor.count(')')
-        if open_brackets != close_brackets:
-            print(f"   ❌ 括号不匹配: 开括号({open_brackets}) != 闭括号({close_brackets})")
+
+        # 括号匹配检查
+        if factor.count('(') != factor.count(')'):
+            print(
+                f"   ❌ 括号不匹配: 开括号({factor.count('(')}) != 闭括号({factor.count(')')})"
+            )
             return False
-        
-        # 检查是否有明显的重复
-        if len(factor) > 100:  # 如果表达式过长，可能有问题
-            print("   ⚠️ 表达式过长，请检查是否有重复")
+
+        # 放宽长度限制：仅在极端情况下提示
+        if len(factor) > 2000:
+            print("   ⚠️ 表达式过长，请检查是否存在粘贴错误")
             return False
-        
+
         return True
 
     def load_credentials(self):
