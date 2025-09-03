@@ -241,8 +241,8 @@ class WorldQuantFactorOptimizer:
             raise Exception(f"登录失败: {response.status_code} - {response.text}")
 
     def get_gpt_suggestions(self) -> List[Dict[str, str]]:
-        """使用OpenAI客户端获取因子改进建议"""
-        print("🤖 正在使用GPT-5-chat生成因子改进建议...")
+        """获取因子改进建议"""
+        print(f"🤖 正在使用{self.llm_model}生成因子改进建议...")
         
         try:
             completion = self.client.chat.completions.create(
@@ -266,7 +266,7 @@ class WorldQuantFactorOptimizer:
                 temperature=0.7
             )
             
-            # 处理GPT-5-chat的响应格式
+            # 处理响应格式
             content = ""
             if completion.choices and len(completion.choices) > 0:
                 choice = completion.choices[0]
@@ -280,7 +280,7 @@ class WorldQuantFactorOptimizer:
                     return self.get_simple_suggestions()
             
             if content:
-                print("📝 GPT-5-chat回复:")
+                print(f"📝 {self.llm_model}回复:")
                 print(content)
                 print("-" * 80)
                 
@@ -293,7 +293,7 @@ class WorldQuantFactorOptimizer:
                 return self.get_default_suggestions()
             
         except Exception as e:
-            print(f"❌ GPT-5-chat API调用失败: {str(e)}")
+            print(f"❌ API调用失败: {str(e)}")
             print("🔄 使用默认建议作为备选...")
             # 返回默认建议作为备选
             return self.get_default_suggestions()
@@ -356,7 +356,7 @@ class WorldQuantFactorOptimizer:
             return self.get_default_suggestions()
 
     def parse_gpt_suggestions(self, content: str) -> List[Dict[str, str]]:
-        """解析GPT-5-chat的建议内容"""
+        """解析建议内容"""
         suggestions = []
         
         # 尝试解析新的格式 (### 建议X: 格式)
@@ -459,7 +459,7 @@ class WorldQuantFactorOptimizer:
         
         # 如果解析失败，返回默认建议
         if len(suggestions) != 5:
-            print(f"⚠️ 解析GPT-5-chat建议失败，返回默认建议 (解析到{len(suggestions)}条)")
+            print(f"⚠️ 解析建议失败，返回默认建议 (解析到{len(suggestions)}条)")
             # 打印调试信息
             print("调试信息：已解析的建议:")
             for i, sugg in enumerate(suggestions, 1):
@@ -600,7 +600,7 @@ class WorldQuantFactorOptimizer:
         print(f"🎯 目标因子: {self.original_factor}")
         print("=" * 80)
         
-        # 1. 获取GPT-5-chat建议
+        # 1. 获取建议
         suggestions = self.get_gpt_suggestions()
         
         print(f"📋 获得 {len(suggestions)} 条改进建议:")
@@ -677,7 +677,7 @@ class WorldQuantFactorOptimizer:
         
         # 保存结果
         timestamp = int(time.time())
-        results_file = f"gpt5chat_factor_optimization_results_{timestamp}.json"
+        results_file = f"./log/result_{timestamp}.json"
         
         with open(results_file, 'w', encoding='utf-8') as f:
             json.dump({
