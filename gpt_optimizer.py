@@ -9,7 +9,7 @@ from openai import OpenAI
 
 
 class WorldQuantFactorOptimizer:
-    def __init__(self):
+    def __init__(self, factor=None):
         # 加载凭证
         self.load_credentials()
         
@@ -26,7 +26,10 @@ class WorldQuantFactorOptimizer:
         self.available_operators = self.load_operators()
 
         # 获取用户输入的原始因子
-        self.original_factor = self.get_user_input_factor()
+        if factor:
+            self.original_factor = factor
+        else:
+            self.original_factor = self.get_user_input_factor()
         
         # 提示词模板
         self.prompt_template = """
