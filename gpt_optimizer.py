@@ -9,7 +9,7 @@ from openai import OpenAI
 
 
 class WorldQuantFactorOptimizer:
-    def __init__(self, factor=None):
+    def __init__(self, model=None, factor=None):
         # 加载凭证
         self.load_credentials()
         
@@ -24,6 +24,9 @@ class WorldQuantFactorOptimizer:
         
         # 先加载可用的操作符（用于输入校验）
         self.available_operators = self.load_operators()
+
+        #获取模型名称
+        self.llm_model = model
 
         # 获取用户输入的原始因子
         if factor:
@@ -248,7 +251,7 @@ class WorldQuantFactorOptimizer:
                     "X-Title": "WorldQuant Factor Optimizer",
                 },
                 extra_body={},
-                model="openai/gpt-5-chat",
+                model=self.llm_model,
                 messages=[
                     {
                         "role": "system",
