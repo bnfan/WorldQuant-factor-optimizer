@@ -1,0 +1,42 @@
+{
+  "original_factor": "-ts_mean((close/open - 1), 20))",
+  "timestamp": 1756884886,
+  "results": [
+    {
+      "status": "error",
+      "error": "'alpha'",
+      "description": "原始因子",
+      "expression": "-ts_mean((close/open - 1), 20))"
+    },
+    {
+      "status": "error",
+      "error": "'alpha'",
+      "description": "结合其他市场指标",
+      "expression": "(-ts_mean((close/open - 1), 20)) * ts_corr(rank(close), rank(volume), 10))"
+    },
+    {
+      "status": "error",
+      "error": "'alpha'",
+      "description": "添加时间衰减",
+      "expression": "ts_decay_linear(-ts_mean((close/open - 1), 20)), 5)"
+    },
+    {
+      "status": "error",
+      "error": "'alpha'",
+      "description": "包含波动率指标",
+      "expression": "(-ts_mean((close/open - 1), 20)) * ts_stddev(close, 10))"
+    },
+    {
+      "status": "error",
+      "error": "'alpha'",
+      "description": "截面排名方法",
+      "expression": "rank(-ts_mean((close/open - 1), 20)))"
+    },
+    {
+      "status": "error",
+      "error": "'alpha'",
+      "description": "结合均值回归逻辑",
+      "expression": "(-ts_mean((close/open - 1), 20)) * rank(close - open))"
+    }
+  ]
+}
