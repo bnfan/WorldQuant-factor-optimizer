@@ -325,7 +325,7 @@ class WorldQuantFactorOptimizer:
                     "X-Title": "WorldQuant Factor Optimizer",
                 },
                 extra_body={},
-                model="openai/gpt-5-chat",
+                model="anthropic/claude-sonnet-4",
                 messages=[
                     {
                         "role": "user",
